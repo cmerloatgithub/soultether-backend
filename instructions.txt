@@ -1,0 +1,11 @@
+Step,Tool,Cost,Time
+1. Use Immanuel (GitHub),pip install immanuel,Free,5 min
+2. Use pyswisseph (your local ephe),Already have,Free,0 min
+3. Use FlutterFlow or Adalo (no-code mobile),Drag-drop UI,Free tier,1 hour
+4. Use Nominatim API (geocode),"Free, open",Free,1 line
+5. Use Astro.com RSS or Astrodatabank JSON,Public,Free,1 line
+6. Use GitHub Pages for .txt download,Free,Free,1 click
+
+You build the UI in a visual editor.
+You call your local ephe via a single HTTP trigger to a GitHub Action 
+that runs your existing Python script and returns the reading.
