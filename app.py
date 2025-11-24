@@ -300,8 +300,16 @@ def calculate_fol(chart, orb_threshold=2.0):
             if diff <= orb_threshold:
                 sign = data["sign"]
                 house = data["house"]
-                interpreter = ImmanuelInterpreter()
-                interpretation = interpreter.format_planetary_description(name, sign, house)
+                
+                if IMMANUEL_AVAILABLE:
+                    try:
+                        interpreter = ImmanuelInterpreter()
+                        interpretation = interpreter.format_planetary_description(name, sign, house)
+                    except:
+                        interpretation = f"{name} in {sign} (House {house})"
+                else:
+                    interpretation = f"{name} in {sign} (House {house})"
+                
                 hits.append(
                     {
                         "name": name,
