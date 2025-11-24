@@ -3,15 +3,16 @@ from datetime import datetime
 import os
 import json
 import logging
-import swisseph as swe
 import requests
+
+try:
+    import swisseph as swe
+    swe.set_ephe_path("/app/ephe")
+except:
+    swe = None
 
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
-
-IMMANUEL_EPHE = os.path.join(os.path.dirname(__file__), "immanuel-python/immanuel/resources/ephemeris")
-EPHE_PATH = IMMANUEL_EPHE if os.path.exists(IMMANUEL_EPHE) else "/swisseph-master/ephe"
-swe.set_ephe_path(EPHE_PATH)
 
 try:
     from immanuel_interpreter import ImmanuelInterpreter
