@@ -37,7 +37,7 @@ class AppViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var chartData: ChartData?
     
-    private let baseURL = "https://your-railway-app.up.railway.app"
+    private let baseURL = "https://web-production-93b91.up.railway.app"
     
     func navigateTo(_ screen: Screen) {
         self.currentScreen = screen

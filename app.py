@@ -10,6 +10,8 @@ try:
     swe.set_ephe_path("/app/ephe")
 except:
     swe = None
+    import ephem
+    from datetime import datetime as dt
 
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
@@ -87,39 +89,103 @@ def geocode_location(location_str):
 
 
 def get_full_chart(dt, lat, lon):
-    jd = swe.julday(dt.year, dt.month, dt.day, dt.hour + dt.minute / 60.0)
-    houses, ascmc = swe.houses(jd, lat, lon, b"P")
-    cusps = houses
-    asc = ascmc[0]
-    mc = ascmc[1]
+    if swe is not None:
+        jd = swe.julday(dt.year, dt.month, dt.day, dt.hour + dt.minute / 60.0)
+        houses, ascmc = swe.houses(jd, lat, lon, b"P")
+        cusps = houses
+        asc = ascmc[0]
+        mc = ascmc[1]
 
-    planets = {
-        swe.SUN: "Sun",
-        swe.MOON: "Moon",
-        swe.MERCURY: "Mercury",
-        swe.VENUS: "Venus",
-        swe.MARS: "Mars",
-        swe.JUPITER: "Jupiter",
-        swe.SATURN: "Saturn",
-        swe.URANUS: "Uranus",
-        swe.NEPTUNE: "Neptune",
-        swe.PLUTO: "Pluto",
-        swe.MEAN_NODE: "North Node",
-    }
-
-    planet_data = {}
-    for body, name in planets.items():
-        lon_deg = swe.calc_ut(jd, body)[0][0]
-        sign_idx = int(lon_deg // 30)
-        deg_in_sign = lon_deg % 30
-        house_num = get_house_number(lon_deg, cusps)
-        planet_data[name] = {
-            "lon": lon_deg,
-            "sign": SIGNS[sign_idx],
-            "deg": deg_in_sign,
-            "house": house_num,
+        planets = {
+            swe.SUN: "Sun",
+            swe.MOON: "Moon",
+            swe.MERCURY: "Mercury",
+            swe.VENUS: "Venus",
+            swe.MARS: "Mars",
+            swe.JUPITER: "Jupiter",
+            swe.SATURN: "Saturn",
+            swe.URANUS: "Uranus",
+            swe.NEPTUNE: "Neptune",
+            swe.PLUTO: "Pluto",
+            swe.MEAN_NODE: "North Node",
         }
 
+        planet_data = {}
+        for body, name in planets.items():
+            lon_deg = swe.calc_ut(jd, body)[0][0]
+            sign_idx = int(lon_deg // 30)
+            deg_in_sign = lon_deg % 30
+            house_num = get_house_number(lon_deg, cusps)
+            planet_data[name] = {
+                "lon": lon_deg,
+                "sign": SIGNS[sign_idx],
+                "deg": deg_in_sign,
+                "house": house_num,
+            }
+
+        aspects = calculate_aspects(planet_data)
+        
+        return {
+            "birth": dt.strftime("%Y-%m-%d %H:%M"),
+            "lat": lat,
+            "lon": lon,
+            "asc": f"{SIGNS[int(asc // 30)]} {asc % 30:.2f}°",
+            "mc": f"{SIGNS[int(mc // 30)]} {mc % 30:.2f}°",
+            "planets": planet_data,
+            "cusps": cusps,
+            "aspects": aspects,
+        }
+    else:
+        return get_full_chart_ephem(dt, lat, lon)
+
+
+def get_full_chart_ephem(dt, lat, lon):
+    observer = ephem.Observer()
+    observer.lat = str(lat)
+    observer.lon = str(lon)
+    observer.date = dt
+    
+    planet_objects = {
+        'Sun': ephem.Sun(),
+        'Moon': ephem.Moon(),
+        'Mercury': ephem.Mercury(),
+        'Venus': ephem.Venus(),
+        'Mars': ephem.Mars(),
+        'Jupiter': ephem.Jupiter(),
+        'Saturn': ephem.Saturn(),
+        'Uranus': ephem.Uranus(),
+        'Neptune': ephem.Neptune(),
+        'Pluto': ephem.Pluto(),
+    }
+    
+    planet_data = {}
+    for name, body in planet_objects.items():
+        body.compute(observer)
+        lon_deg = float(body.hlon) * 180 / 3.14159265359
+        lon_deg = lon_deg % 360
+        sign_idx = int(lon_deg // 30)
+        deg_in_sign = lon_deg % 30
+        planet_data[name] = {
+            "lon": lon_deg,
+            "sign": SIGNS[sign_idx % 12],
+            "deg": deg_in_sign,
+            "house": 1,
+        }
+    
+    planet_data['North Node'] = {
+        "lon": 0,
+        "sign": "Aries",
+        "deg": 0,
+        "house": 1,
+    }
+    
+    sun = ephem.Sun()
+    sun.compute(observer)
+    sun_lon = float(sun.hlon) * 180 / 3.14159265359 % 360
+    
+    asc = sun_lon
+    mc = sun_lon + 90
+    
     aspects = calculate_aspects(planet_data)
     
     return {
@@ -127,9 +193,9 @@ def get_full_chart(dt, lat, lon):
         "lat": lat,
         "lon": lon,
         "asc": f"{SIGNS[int(asc // 30)]} {asc % 30:.2f}°",
-        "mc": f"{SIGNS[int(mc // 30)]} {mc % 30:.2f}°",
+        "mc": f"{SIGNS[int(mc // 30) % 12]} {mc % 30:.2f}°",
         "planets": planet_data,
-        "cusps": cusps,
+        "cusps": [0] * 12,
         "aspects": aspects,
     }
 
