@@ -305,7 +305,8 @@ def calculate_fol(chart, orb_threshold=2.0):
                     try:
                         interpreter = ImmanuelInterpreter()
                         interpretation = interpreter.format_planetary_description(name, sign, house)
-                    except:
+                    except Exception as e:
+                        logger.error(f"ImmanuelInterpreter failed for {name} {sign} H{house}: {str(e)}")
                         interpretation = f"{name} in {sign} (House {house})"
                 else:
                     interpretation = f"{name} in {sign} (House {house})"
