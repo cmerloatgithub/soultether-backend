@@ -321,10 +321,11 @@ def calculate_reading():
         is_am = data.get('is_am', True)
         location = data.get('location')
         
-        if not is_am and hour != 12:
-            hour += 12
-        elif is_am and hour == 12:
-            hour = 0
+        if hour <= 12:
+            if not is_am and hour != 12:
+                hour += 12
+            elif is_am and hour == 12:
+                hour = 0
         
         dt = datetime.strptime(f"{date_str} {hour:02d}:{minute:02d}", "%Y-%m-%d %H:%M")
         
