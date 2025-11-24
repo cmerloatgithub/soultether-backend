@@ -38,6 +38,50 @@ SIGNS = [
     "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
 ]
 
+SIGN_TRAITS = {
+    "Aries": {"keywords": "pioneering, courageous, direct", "desc": "You lead with warrior spirit, fearless and direct. Hungry for new experiences, you're the zodiac's initiator."},
+    "Taurus": {"keywords": "stable, grounded, sensual", "desc": "You're the zodiac's anchor—steady, reliable, deeply grounded in the material world."},
+    "Gemini": {"keywords": "curious, communicative, versatile", "desc": "Your mind is your superpower. Curious, articulate, and adaptable in all things."},
+    "Cancer": {"keywords": "nurturing, emotional, protective", "desc": "You lead with your heart. Deeply emotional and intuitive, naturally protective of loved ones."},
+    "Leo": {"keywords": "confident, creative, generous", "desc": "You're born to shine. Naturally charismatic and creative, commanding attention wherever you go."},
+    "Virgo": {"keywords": "analytical, practical, helpful", "desc": "You see what others miss. Your analytical mind identifies flaws and solutions instinctively."},
+    "Libra": {"keywords": "diplomatic, aesthetic, social", "desc": "You're the zodiac's diplomat. You naturally see all sides and seek harmony in all things."},
+    "Scorpio": {"keywords": "intense, magnetic, secretive", "desc": "You possess magnetic intensity. You see beneath surfaces, understanding hidden dynamics."},
+    "Sagittarius": {"keywords": "adventurous, philosophical, optimistic", "desc": "You're the zodiac's explorer. Perpetually optimistic and hungry for knowledge and meaning."},
+    "Capricorn": {"keywords": "ambitious, responsible, disciplined", "desc": "You're naturally strategic and ambitious. Disciplined and responsible, building enduring success."},
+    "Aquarius": {"keywords": "innovative, humanitarian, detached", "desc": "You think ahead of your time. Idealistic and intellectual, seeing possibility in what others dismiss."},
+    "Pisces": {"keywords": "intuitive, compassionate, artistic", "desc": "You're a mystic and dreamer. Deeply intuitive and empathic, profoundly creative."},
+}
+
+PLANET_MEANINGS = {
+    "Sun": "core identity and creative life force",
+    "Moon": "emotional nature and instinctive needs",
+    "Mercury": "communication style and intellectual approach",
+    "Venus": "capacity for love, pleasure, and values",
+    "Mars": "drive, courage, and how you assert yourself",
+    "Jupiter": "expansion, luck, and higher wisdom",
+    "Saturn": "lessons and where you build lasting strength",
+    "Uranus": "individuality and revolutionary impulses",
+    "Neptune": "spirituality, creativity, and intuition",
+    "Pluto": "transformation and psychological depth",
+    "North Node": "soul's growth direction and life purpose",
+}
+
+HOUSE_CONTEXTS = {
+    1: "identity, appearance, and first impressions",
+    2: "values, resources, and self-worth",
+    3: "communication, thinking, and learning",
+    4: "home, family, and private self",
+    5: "creativity, romance, and self-expression",
+    6: "work, health, and daily service",
+    7: "relationships, marriage, and partnerships",
+    8: "shared resources, sexuality, and transformation",
+    9: "higher learning, spirituality, and travel",
+    10: "career, reputation, and public life",
+    11: "friendships, groups, and community",
+    12: "spirituality, hidden matters, and karma",
+}
+
 INTERP_DB = {
     "phantom_pisces_7th": [
         "Soul operates through deep empathy and boundary dissolution in partnerships.",
@@ -52,6 +96,20 @@ INTERP_DB = {
         "Trust the phantom layers — they reveal the soul beyond the stars.",
     ],
 }
+
+
+def generate_interpretation(planet, sign, house):
+    """Generate a rich interpretation without external dependencies."""
+    sign_info = SIGN_TRAITS.get(sign, {})
+    planet_meaning = PLANET_MEANINGS.get(planet, "an important planetary energy")
+    house_context = HOUSE_CONTEXTS.get(house, "a key life area")
+    
+    sign_keywords = sign_info.get("keywords", "unique qualities")
+    sign_desc = sign_info.get("desc", f"{sign} energy shapes this expression.")
+    
+    interpretation = f"{planet} in {sign} carries {sign_keywords}. {sign_desc} In {house_context}, you express {planet_meaning} through the lens of {sign}, approaching this life area with {sign_keywords}."
+    
+    return interpretation
 
 
 def geocode_location(location_str):
@@ -300,16 +358,7 @@ def calculate_fol(chart, orb_threshold=2.0):
             if diff <= orb_threshold:
                 sign = data["sign"]
                 house = data["house"]
-                
-                if IMMANUEL_AVAILABLE:
-                    try:
-                        interpreter = ImmanuelInterpreter()
-                        interpretation = interpreter.format_planetary_description(name, sign, house)
-                    except Exception as e:
-                        logger.error(f"ImmanuelInterpreter failed for {name} {sign} H{house}: {str(e)}")
-                        interpretation = f"{name} in {sign} (House {house})"
-                else:
-                    interpretation = f"{name} in {sign} (House {house})"
+                interpretation = generate_interpretation(name, sign, house)
                 
                 hits.append(
                     {
