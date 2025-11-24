@@ -4,4 +4,5 @@ gunicorn==20.1.0
 pymeeus==0.5.11
 requests==2.31.0
 ephem==4.1.5
+swisseph>=2.10.0
 immanuel
